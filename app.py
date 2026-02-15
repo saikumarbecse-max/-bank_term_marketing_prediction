@@ -4,6 +4,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 import os
+import requests
+from io import BytesIO
 
 from sklearn.metrics import (
     accuracy_score, roc_auc_score, precision_score, recall_score,
@@ -256,6 +258,23 @@ def display_metrics(metrics, y_test, y_pred):
         """)
 
 # ========================================
+# DOWNLOAD TEST DATA FUNCTION
+# ========================================
+@st.cache_data
+def download_test_data_from_github():
+    """Download test data from GitHub repository"""
+    github_url = "https://raw.githubusercontent.com/saikumarbecse-max/-bank_term_marketing_prediction/main/data/test_data.csv"
+    
+    try:
+        response = requests.get(github_url)
+        response.raise_for_status()  # Raise an error for bad status codes
+        return response.content
+    except Exception as e:
+        st.error(f"Error downloading file: {e}")
+        return None
+    
+
+# ========================================
 # FILE UPLOAD SECTION
 # ========================================
 st.header("📁 Upload Test Data")
@@ -272,6 +291,21 @@ with col1:
 with col2:
     st.markdown("**File Requirements:**")
     st.caption("✅ CSV format")
+
+    # Download button for test data
+    st.markdown("---")
+    st.markdown("**Need sample data?**")
+    csv_data = download_test_data_from_github()
+    
+    if csv_data:
+        st.download_button(
+            label="📥 Download Test Data",
+            data=csv_data,
+            file_name="test_data.csv",
+            mime="text/csv",
+            help="Download sample test data from GitHub repository",
+            use_container_width=True
+        )
 
 # ========================================
 # PREDICTION AND EVALUATION
